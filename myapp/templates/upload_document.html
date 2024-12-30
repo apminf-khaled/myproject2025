@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">رفع مستند جديد</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">عنوان المستند</label>
+                            <input type="text" name="title" id="id_title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_document" class="form-label">اختر الملف</label>
+                            <input type="file" name="document" id="id_document" class="form-control" required>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i>
+                                رفع المستند
+                            </button>
+                            <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right"></i>
+                                رجوع
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    background: none;
+    border-bottom: 1px solid var(--light);
+    padding: 1.5rem;
+}
+
+.card-title {
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn i {
+    margin-left: 0.5rem;
+}
+</style>
+{% endblock %}

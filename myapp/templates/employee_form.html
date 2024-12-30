@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="employee-form-container">
+    <header class="form-header">
+        <h2>{% if employee %}تعديل موظف{% else %}إضافة موظف جديد{% endif %}</h2>
+    </header>
+
+    <form method="post" class="employee-form">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h3>المعلومات الأساسية</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}">الاسم الأول</label>
+                    {{ form.first_name }}
+                    {{ form.first_name.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}">الاسم الأخير</label>
+                    {{ form.last_name }}
+                    {{ form.last_name.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.educational_level.id_for_label }}">المستوى التعليمي</label>
+                    {{ form.educational_level }}
+                    {{ form.educational_level.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.specialization.id_for_label }}">التخصص</label>
+                    {{ form.specialization }}
+                    {{ form.specialization.errors }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>معلومات الوظيفة</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.start_date.id_for_label }}">تاريخ بداية الخدمة</label>
+                    {{ form.start_date }}
+                    {{ form.start_date.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.position.id_for_label }}">الوظيفة</label>
+                    {{ form.position }}
+                    {{ form.position.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.organizational_unit.id_for_label }}">الوحدة التنظيمية</label>
+                    {{ form.organizational_unit }}
+                    {{ form.organizational_unit.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.job_class.id_for_label }}">الفئة</label>
+                    {{ form.job_class }}
+                    {{ form.job_class.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.level.id_for_label }}">المستوى</label>
+                    {{ form.level }}
+                    {{ form.level.errors }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>معلومات الترقية والتقييم</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.next_promotion_date.id_for_label }}">تاريخ استحقاق الترقية</label>
+                    {{ form.next_promotion_date }}
+                    {{ form.next_promotion_date.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.evaluation_month.id_for_label }}">شهر التقييم</label>
+                    {{ form.evaluation_month }}
+                    {{ form.evaluation_month.errors }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>معلومات الاتصال</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}">رقم الهاتف</label>
+                    {{ form.phone }}
+                    {{ form.phone.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">البريد الإلكتروني</label>
+                    {{ form.email }}
+                    {{ form.email.errors }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>معلومات إضافية</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.notes.id_for_label }}">ملاحظات</label>
+                    {{ form.notes }}
+                    {{ form.notes.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}">الحالة</label>
+                    {{ form.status }}
+                    {{ form.status.errors }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'employee_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

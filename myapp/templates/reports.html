@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="page-title">لوحة التقارير والإحصائيات</h2>
+                <button onclick="window.print()" class="btn btn-outline-primary">
+                    <i class="fas fa-print"></i> طباعة التقرير
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- الإحصائيات العامة -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">إجمالي الموظفين</h6>
+                            <h2 class="card-title mb-0">{{ total_employees }}</h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">الموظفين النشطين</h6>
+                            <h2 class="card-title mb-0">{{ active_employees }}</h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">في إجازة</h6>
+                            <h2 class="card-title mb-0">{{ on_leave_employees }}</h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-umbrella-beach fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">غير نشطين</h6>
+                            <h2 class="card-title mb-0">{{ inactive_employees }}</h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-user-slash fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التقارير التفصيلية -->
+    <div class="row">
+        <!-- إحصائيات حسب المستوى التعليمي -->
+        <div class="col-md-4">
+            <div class="card report-card h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-graduation-cap"></i>
+                            المستوى التعليمي
+                        </h5>
+                        <span class="badge bg-primary">{{ education_stats.count }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>المستوى</th>
+                                    <th>العدد</th>
+                                    <th>النسبة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in education_stats %}
+                                <tr>
+                                    <td>{{ stat.educational_level|default:"غير محدد" }}</td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>{{ stat.count|divisibleby:total_employees|floatformat:1 }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- إحصائيات حسب الوحدة التنظيمية -->
+        <div class="col-md-4">
+            <div class="card report-card h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sitemap"></i>
+                            الوحدة التنظيمية
+                        </h5>
+                        <span class="badge bg-primary">{{ unit_stats.count }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الوحدة</th>
+                                    <th>العدد</th>
+                                    <th>النسبة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in unit_stats %}
+                                <tr>
+                                    <td>{{ stat.organizational_unit|default:"غير محدد" }}</td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>{{ stat.count|divisibleby:total_employees|floatformat:1 }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- إحصائيات حسب الفئة الوظيفية -->
+        <div class="col-md-4">
+            <div class="card report-card h-100">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-id-badge"></i>
+                            الفئة الوظيفية
+                        </h5>
+                        <span class="badge bg-primary">{{ job_class_stats.count }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الفئة</th>
+                                    <th>العدد</th>
+                                    <th>النسبة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in job_class_stats %}
+                                <tr>
+                                    <td>{{ stat.job_class|default:"غير محدد" }}</td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>{{ stat.count|divisibleby:total_employees|floatformat:1 }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-title {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.stats-card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.stats-icon {
+    opacity: 0.8;
+}
+
+.report-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.report-card .card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 15px;
+}
+
+.report-card .table {
+    margin-bottom: 0;
+}
+
+.report-card .table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.report-card .badge {
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+@media print {
+    .btn-outline-primary {
+        display: none;
+    }
+    
+    .card {
+        break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

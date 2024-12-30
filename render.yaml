@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: django-employee-management
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn myproject.wsgi:application"
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: PYTHON_VERSION
+        value: 3.12.1
+    autoDeploy: true

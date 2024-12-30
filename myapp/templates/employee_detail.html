@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="employee-detail-container">
+    <header class="detail-header">
+        <h2>تفاصيل الموظف</h2>
+        <div class="header-actions">
+            <a href="{% url 'edit_employee' employee.id %}" class="btn btn-warning">تعديل</a>
+            <button class="btn btn-danger" onclick="deleteEmployee({{ employee.id }})">حذف</button>
+            <button class="btn btn-secondary" onclick="window.print()">طباعة</button>
+        </div>
+    </header>
+
+    <div class="detail-content">
+        <div class="detail-section">
+            <h3>المعلومات الأساسية</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">رقم الموظف:</span>
+                    <span class="value">{{ employee.employee_number }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">الاسم:</span>
+                    <span class="value">{{ employee.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">المستوى التعليمي:</span>
+                    <span class="value">{{ employee.educational_level }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">تاريخ الحصول على المؤهل:</span>
+                    <span class="value">{{ employee.education_date|date:"Y/m/d"|default:"غير محدد" }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">التخصص:</span>
+                    <span class="value">{{ employee.specialization }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>معلومات الوظيفة</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">تاريخ بداية الخدمة:</span>
+                    <span class="value">{{ employee.start_date|date:"Y/m/d"|default:"غير محدد" }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">الوظيفة:</span>
+                    <span class="value">{{ employee.position }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">الوحدة التنظيمية:</span>
+                    <span class="value">{{ employee.organizational_unit }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">الفئة:</span>
+                    <span class="value">{{ employee.job_class }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">المستوى:</span>
+                    <span class="value">{{ employee.level }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>معلومات التقييم</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">تاريخ استحقاق التقييم السنوي:</span>
+                    <span class="value">{{ employee.evaluation_date|date:"Y/m/d"|default:"غير محدد" }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">شهر التقييم:</span>
+                    <span class="value">{{ employee.evaluation_month }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>معلومات الاتصال</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">رقم الهاتف:</span>
+                    <span class="value">{{ employee.phone|default:"غير محدد" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h3>معلومات إضافية</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="label">الحالة:</span>
+                    <span class="value status-badge status-{{ employee.status }}">
+                        {{ employee.get_status_display }}
+                    </span>
+                </div>
+                <div class="detail-item full-width">
+                    <span class="label">ملاحظات:</span>
+                    <span class="value">{{ employee.notes|default:"لا توجد ملاحظات" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <div class="section-header d-flex justify-content-between align-items-center">
+                <h3>المستندات</h3>
+                <a href="{% url 'upload_document' employee.id %}" class="btn btn-primary">
+                    <i class="fas fa-upload"></i>
+                    رفع مستند جديد
+                </a>
+            </div>
+            <div class="documents-list">
+                {% if employee.documents.exists %}
+                    {% for doc in employee.documents.all %}
+                    <div class="document-item">
+                        <span class="document-title">{{ doc.title }}</span>
+                        <div class="document-actions">
+                            <a href="{{ doc.document.url }}" class="btn btn-sm btn-info" target="_blank">
+                                <i class="fas fa-eye"></i>
+                                عرض
+                            </a>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDocument({{ doc.id }})">
+                                <i class="fas fa-trash"></i>
+                                حذف
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">لا توجد مستندات مرفقة</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteEmployee(employeeId) {
+    if (confirm('هل أنت متأكد من حذف هذا الموظف؟ سيتم حذف جميع المستندات المرتبطة به.')) {
+        window.location.href = "{% url 'delete_employee' 0 %}".replace('0', employeeId);
+    }
+}
+
+function deleteDocument(documentId) {
+    if (confirm('هل أنت متأكد من حذف هذا المستند؟')) {
+        window.location.href = "{% url 'delete_document' 0 %}".replace('0', documentId);
+    }
+}
+
+// تحسين عرض الطباعة
+@media print {
+    .header-actions, .document-actions {
+        display: none;
+    }
+    
+    .detail-section {
+        break-inside: avoid;
+    }
+    
+    .detail-content {
+        font-size: 12px;
+    }
+}
+</script>
+{% endblock %}

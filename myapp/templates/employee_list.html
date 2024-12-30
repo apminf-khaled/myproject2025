@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="employee-list-container">
+    <header class="list-header">
+        <h2>قائمة الموظفين</h2>
+        <div class="header-actions">
+            <div class="mb-3">
+                <a href="{% url 'add_employee' %}" class="btn btn-primary">إضافة موظف جديد</a>
+                <form action="{% url 'clear_employees' %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من حذف جميع سجلات الموظفين؟')">
+                        حذف جميع السجلات
+                    </button>
+                </form>
+            </div>
+            <button class="btn btn-secondary" onclick="window.print()">طباعة القائمة</button>
+        </div>
+    </header>
+
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="search">بحث:</label>
+                    <input type="text" id="search" name="search" value="{{ request.GET.search }}" 
+                           placeholder="رقم الموظف، الاسم، رقم الهاتف...">
+                </div>
+                <div class="filter-group">
+                    <label for="organizational_unit">الوحدة التنظيمية:</label>
+                    <select id="organizational_unit" name="organizational_unit">
+                        <option value="">الكل</option>
+                        {% for unit in organizational_units %}
+                        <option value="{{ unit.organizational_unit }}" {% if request.GET.organizational_unit == unit.organizational_unit %}selected{% endif %}>
+                            {{ unit.organizational_unit }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="status">الحالة:</label>
+                    <select id="status" name="status">
+                        <option value="">الكل</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>نشط</option>
+                        <option value="on_leave" {% if request.GET.status == 'on_leave' %}selected{% endif %}>في إجازة</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>غير نشط</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="sort">ترتيب حسب:</label>
+                    <select id="sort" name="sort">
+                        <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>الاسم</option>
+                        <option value="employee_number" {% if request.GET.sort == 'employee_number' %}selected{% endif %}>رقم الموظف</option>
+                        <option value="start_date" {% if request.GET.sort == 'start_date' %}selected{% endif %}>تاريخ بداية الخدمة</option>
+                        <option value="evaluation_date" {% if request.GET.sort == 'evaluation_date' %}selected{% endif %}>تاريخ التقييم</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filters-actions">
+                <button type="submit" class="btn btn-primary">تطبيق الفلتر</button>
+                <a href="{% url 'employee_list' %}" class="btn btn-secondary">إعادة تعيين</a>
+            </div>
+        </form>
+    </div>
+
+    {% if employees %}
+    <div class="table-responsive">
+        <table class="employee-table">
+            <thead>
+                <tr>
+                    <th>رقم الموظف</th>
+                    <th>الاسم</th>
+                    <th>المستوى التعليمي</th>
+                    <th>تاريخ المؤهل</th>
+                    <th>التخصص</th>
+                    <th>تاريخ بداية الخدمة</th>
+                    <th>الوظيفة</th>
+                    <th>الوحدة التنظيمية</th>
+                    <th>الفئة</th>
+                    <th>المستوى</th>
+                    <th>تاريخ التقييم</th>
+                    <th>شهر التقييم</th>
+                    <th>رقم الهاتف</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.employee_number }}</td>
+                    <td>{{ employee.name }}</td>
+                    <td>{{ employee.educational_level }}</td>
+                    <td>{{ employee.education_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>{{ employee.specialization }}</td>
+                    <td>{{ employee.start_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>{{ employee.position }}</td>
+                    <td>{{ employee.organizational_unit }}</td>
+                    <td>{{ employee.job_class }}</td>
+                    <td>{{ employee.level }}</td>
+                    <td>{{ employee.evaluation_date|date:"Y/m/d"|default:"-" }}</td>
+                    <td>{{ employee.evaluation_month }}</td>
+                    <td>{{ employee.phone|default:"-" }}</td>
+                    <td>{{ employee.get_status_display }}</td>
+                    <td class="actions">
+                        <a href="{% url 'employee_detail' employee.id %}" class="btn btn-info btn-sm">عرض</a>
+                        <a href="{% url 'edit_employee' employee.id %}" class="btn btn-warning btn-sm">تعديل</a>
+                        <button onclick="deleteEmployee({{ employee.id }})" class="btn btn-danger btn-sm">حذف</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <p>لا يوجد موظفين للعرض</p>
+    </div>
+    {% endif %}
+
+    {% if employees.has_other_pages %}
+    <div class="pagination">
+        {% if employees.has_previous %}
+        <a href="?page={{ employees.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.organizational_unit %}&organizational_unit={{ request.GET.organizational_unit }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="btn btn-outline-primary">&laquo; السابق</a>
+        {% endif %}
+
+        {% for num in employees.paginator.page_range %}
+        {% if employees.number == num %}
+        <span class="btn btn-primary">{{ num }}</span>
+        {% else %}
+        <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.organizational_unit %}&organizational_unit={{ request.GET.organizational_unit }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="btn btn-outline-primary">{{ num }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if employees.has_next %}
+        <a href="?page={{ employees.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.organizational_unit %}&organizational_unit={{ request.GET.organizational_unit }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="btn btn-outline-primary">التالي &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function deleteEmployee(employeeId) {
+    if (confirm('هل أنت متأكد من حذف هذا الموظف؟')) {
+        window.location.href = `/delete_employee/${employeeId}/`;
+    }
+}
+
+// تحسين عرض الطباعة
+@media print {
+    .header-actions, .filters-section, .actions, .pagination {
+        display: none;
+    }
+    .employee-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .employee-table th,
+    .employee-table td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: right;
+    }
+    .employee-table th {
+        background-color: #f0f0f0;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- إحصائيات سريعة -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-details">
+                <h3 class="stat-title">إجمالي الموظفين</h3>
+                <div class="stat-value" data-count="{{ total_employees }}">{{ total_employees }}</div>
+                <div class="stat-change">
+                    <span>موظف في النظام</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-details">
+                <h3 class="stat-title">الموظفون النشطون</h3>
+                <div class="stat-value" data-count="{{ active_employees }}">{{ active_employees }}</div>
+                <div class="stat-change">
+                    <span>من إجمالي {{ total_employees }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-details">
+                <h3 class="stat-title">في إجازة</h3>
+                <div class="stat-value" data-count="{{ on_leave_count }}">{{ on_leave_count }}</div>
+                <div class="stat-change">
+                    <span>موظف في إجازة</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-details">
+                <h3 class="stat-title">المستندات</h3>
+                <div class="stat-value" data-count="{{ total_documents }}">{{ total_documents }}</div>
+                <div class="stat-change">
+                    <span>مستند مرفوع</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3>توزيع الموظفين حسب الوحدة التنظيمية</h3>
+            </div>
+            <div class="chart-body">
+                <canvas id="departmentChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3>نشاط النظام</h3>
+            </div>
+            <div class="chart-body">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- آخر النشاطات -->
+    <div class="recent-activities">
+        <div class="section-header">
+            <h3>آخر النشاطات</h3>
+        </div>
+        <div class="activities-list">
+            {% for activity in recent_activities %}
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas {% if activity.type == 'new_employee' %}fa-user-plus
+                               {% elif activity.type == 'document' %}fa-file-alt
+                               {% else %}fa-info-circle{% endif %}"></i>
+                </div>
+                <div class="activity-content">
+                    <p>{{ activity.description }}</p>
+                    <span class="activity-time">{{ activity.created_at|timesince }}</span>
+                </div>
+                <div class="activity-action">
+                    <a href="{{ activity.url }}" class="btn btn-sm">عرض</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>لا توجد نشاطات حديثة</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- إضافة مكتبة Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- إضافة السكربت الخاص بالرسوم البيانية -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة الرسم البياني للوحدات التنظيمية
+    const deptCtx = document.getElementById('departmentChart').getContext('2d');
+    new Chart(deptCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ departments|safe }},
+            datasets: [{
+                data: {{ department_counts|safe }},
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                    '#858796', '#5a5c69', '#2c9faf', '#3498db', '#e67e22'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: 'Cairo'
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // تهيئة الرسم البياني للنشاط
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    new Chart(activityCtx, {
+        type: 'line',
+        data: {
+            labels: {{ activity_labels|safe }},
+            datasets: [{
+                label: 'عدد العمليات',
+                data: {{ activity_data|safe }},
+                borderColor: '#4e73df',
+                tension: 0.3,
+                fill: true,
+                backgroundColor: 'rgba(78, 115, 223, 0.1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: {
+                            family: 'Cairo'
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            family: 'Cairo'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            family: 'Cairo'
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // تأثير العد التصاعدي للأرقام
+    const countElements = document.querySelectorAll('.stat-value');
+    countElements.forEach(element => {
+        const target = parseInt(element.getAttribute('data-count'));
+        let current = 0;
+        const increment = target / 30;
+        const duration = 1000;
+        const step = duration / 30;
+
+        const counter = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                element.textContent = target;
+                clearInterval(counter);
+            } else {
+                element.textContent = Math.round(current);
+            }
+        }, step);
+    });
+});
+</script>
+{% endblock %}
